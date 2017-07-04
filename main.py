@@ -36,7 +36,7 @@ model = Sequential()
 model.add(Embedding(n_vocab,100))
 model.add(Convolution1D(64,5,border_mode='same', activation='relu'))
 model.add(Dropout(0.25))
-model.add(LSTM(100,return_sequences=True))
+model.add(SimpleRNN(100,return_sequences=True))
 model.add(TimeDistributed(Dense(n_classes, activation='softmax')))
 model.compile('rmsprop', 'categorical_crossentropy')
 
@@ -58,6 +58,7 @@ train_f_scores = []
 val_f_scores = []
 test_f_scores = []
 best_val_f1 = 0
+best_test_f1 = 0
 
 for i in range(n_epochs):
     print("Epoch {}".format(i))
@@ -143,14 +144,14 @@ for i in range(n_epochs):
     avgLoss = avgLoss/n_batch
     
     predword_test = [ list(map(lambda x: idx2la[x], y)) for y in test_pred_label]
-    con_dict = conlleval(predword_val, testY, testX, 'r.txt')
-    val_f_scores.append(con_dict['f1'])
+    con_dict1 = conlleval(predword_test, testY, testX, 'r.txt')
+    test_f_scores.append(con_dict1['f1'])
     
-    print('Loss = {}, Precision = {}, Recall = {}, F1 = {}'.format(avgLoss, con_dict['r'], con_dict['p'], con_dict['f1']))
+    print('Loss = {}, Precision = {}, Recall = {}, F1 = {}'.format(avgLoss, con_dict1['r'], con_dict1['p'], con_dict1['f1']))
 
-    if con_dict['f1'] > best_val_f1:
-        best_val_f1 = con_dict['f1']
-        open('model_architecture.json','w').write(model.to_json())
-        model.save_weights('best_model_weights.h5',overwrite=True)
-        print("Best test F1 score = {}".format(best_val_f1))
+    if con_dict1['f1'] > best_test_f1:
+        best_test_f1 = con_dict1['f1']
+        open('model_architecture1.json','w').write(model.to_json())
+        model.save_weights('best_model_weights1.h5',overwrite=True)
+        print("Best test F1 score = {}".format(best_test_f1))
     print()
